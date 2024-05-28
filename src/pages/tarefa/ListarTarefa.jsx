@@ -11,6 +11,7 @@ import CardHeader from '@mui/material/CardHeader';
 import CardContent from '@mui/material/CardContent';
 import CardActions from '@mui/material/CardActions';
 import Button from '@mui/material/Button';
+import Box from "@mui/material/Box";
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import Modal from '@mui/material/Modal';
@@ -45,13 +46,17 @@ const initialRows = [
 const ListarTarefa = () => {
   const [open, setOpen] = useState(false);
   const [openEditar, setOpenEditar] = useState(false);
+  const [openExclusaoModal, setOpenExclusaoModal] = useState(false);
   const [tarefas, setTarefas] = useState([]);
   const [tarefa, setTarefa] = useState();
   const [idTarefaSelecionada, setIdTarefaSelecionada] = useState([]);
+  const [selectedRowId, setSelectedRowId] = useState(null);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const handleOpenEditar = () => setOpenEditar(true);
   const handleCloseEditar = () => setOpenEditar(false);
+
+  const handleCloseConfirmarExlusao = () => setOpenExclusaoModal(false);
 
   //O array definido acima é setado como conteúdo do state Tarefas na renderização inicial do componente.
   useEffect(() => {
@@ -73,12 +78,18 @@ const ListarTarefa = () => {
     setOpenEditar(true)
   };
 
+  const handleOpenConfirmarExlusao = (rowId) => {
+    setOpenExclusaoModal(true);
+    setSelectedRowId(rowId);
+  }
+
   const handleDeletar = (id) => {
     setTarefas(current =>
       current.filter(tarefa => {
         return tarefa.idTarefa !== id;
       }),
     );
+    setOpenExclusaoModal(false);
   };
 
     return(
@@ -88,9 +99,9 @@ const ListarTarefa = () => {
           title="Tarefas"
           subheader="Listagem de Tarefas"
         /> 
-        <CardContent>
-            <TableContainer component={Paper}>
-            <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">
+        <CardContent container spacing={2}>
+            <TableContainer component={Paper} item xs={8}>
+            <Table sx={{ minWidth: 650 }} size="large" aria-label="a dense table">
                 <TableHead>
                 <TableRow>
                     <TableCell>#</TableCell>
@@ -125,7 +136,7 @@ const ListarTarefa = () => {
                         <Button variant="contained" color="success" onClick={() => handleEditar(row.idTarefa)}><EditIcon fontSize="small" /></Button>            
                       </TableCell>
                       <TableCell align="center">
-                        <Button variant="contained" color="error" onClick={() => handleDeletar(row.idTarefa)}><DeleteIcon fontSize="small" /></Button>            
+                        <Button variant="contained" color="error" onClick={() => handleOpenConfirmarExlusao(row.idTarefa)}><DeleteIcon fontSize="small" /></Button>            
                       </TableCell>
                     </TableRow>
                 ))}
@@ -133,7 +144,7 @@ const ListarTarefa = () => {
             </Table>
             </TableContainer>
         </CardContent>
-        <CardActions>
+        <CardActions sx={{ minWidth: 650 }}>
             <Button size="small" variant="contained" onClick={handleOpen}>Criar Tarefa</Button>
             <Button size="small" variant="outlined">Cancelar</Button>
       </CardActions> 
@@ -161,6 +172,30 @@ const ListarTarefa = () => {
           <EditarTarefa handleCloseEditar={handleCloseEditar} idTarefaSelecionada={idTarefaSelecionada} tarefas={tarefas} tarefa={tarefa} setTarefas={setTarefas} />
         </div>
       </Modal>  
+    </div>
+    <div>
+      <Modal
+        open={openExclusaoModal}
+        onClose={handleCloseConfirmarExlusao}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center', // Center horizontally
+          height: '100vh', // Center vertically
+        }}
+      >
+      <Card>
+      <CardHeader
+          title="Deseja mesmo excluir esta tarefa?"
+        />
+        <Box display="flex" justifyContent="center" alignItems="center" padding={2}>
+          <Button color="success" size="small" variant="contained" onClick={() => handleDeletar(selectedRowId)}>Confirmar</Button>
+          <Button color="error" size="small" variant="outlined" onClick={handleCloseConfirmarExlusao}>Cancelar</Button>
+        </Box>
+      </Card>
+    </Modal>
     </div>
   </>    
  );
